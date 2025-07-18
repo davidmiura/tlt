@@ -1,0 +1,246 @@
+{
+  "agent_id": "test_ambient_event_agent",
+  "debug_mode": true,
+  "sleep_interval": 2.0,
+  "max_iterations": 50,
+  "openai_api_key": "dummy-key-for-testing",
+  
+  "mcp_services": {
+    "event_manager": {
+      "url": "http://localhost:8004",
+      "transport": "streamable-http",
+      "path": "/mcp",
+      "enabled": true,
+      "timeout": 30,
+      "tools": [
+        "create_event",
+        "get_event", 
+        "update_event",
+        "delete_event",
+        "list_all_events",
+        "get_events_by_creator",
+        "get_events_by_status",
+        "create_rsvp",
+        "update_rsvp",
+        "delete_rsvp",
+        "get_event_rsvps",
+        "get_event_analytics",
+        "update_user_rsvp",
+        "get_user_rsvps"
+      ]
+    },
+    "photo_vibe_check": {
+      "url": "http://localhost:8005",
+      "transport": "streamable-http", 
+      "path": "/mcp",
+      "enabled": true,
+      "timeout": 60,
+      "tools": [
+        "submit_photo_dm",
+        "activate_photo_collection",
+        "deactivate_photo_collection",
+        "update_photo_settings",
+        "add_pre_event_photos",
+        "get_photo_status",
+        "get_event_photo_summary",
+        "generate_event_slideshow",
+        "get_user_photo_history"
+      ]
+    },
+    "vibe_bit": {
+      "url": "http://localhost:8006",
+      "transport": "streamable-http",
+      "path": "/mcp", 
+      "enabled": true,
+      "timeout": 30,
+      "tools": [
+        "create_canvas",
+        "get_canvas_info",
+        "update_canvas_settings",
+        "activate_canvas",
+        "deactivate_canvas",
+        "place_element",
+        "view_canvas_progress",
+        "get_canvas_image",
+        "get_user_contributions",
+        "get_canvas_analytics"
+      ]
+    }
+  },
+
+  "adapter_services": {
+    "discord_adapter": {
+      "url": "http://localhost:8001",
+      "webhook_endpoint": "/events",
+      "enabled": true,
+      "rate_limit": {
+        "messages_per_minute": 10,
+        "burst_limit": 5
+      },
+      "channels": {
+        "default": "123456789012345678",
+        "announcements": "123456789012345679", 
+        "events": "123456789012345680",
+        "photos": "123456789012345681",
+        "vibe_bit": "123456789012345682"
+      },
+      "event_types": [
+        "message_create",
+        "message_reaction_add",
+        "message_reaction_remove",
+        "thread_create",
+        "thread_update"
+      ]
+    }
+  },
+
+  "agent_config": {
+    "max_pending_events": 100,
+    "max_conversation_history": 500,
+    "timer_check_interval": 30,
+    "max_retry_attempts": 3,
+    "message_rate_limit": 8,
+    "event_processing_timeout": 120,
+    "reasoning_timeout": 60,
+    "mcp_call_timeout": 30
+  },
+
+  "timer_settings": {
+    "reminder_schedule": {
+      "1_day_before": {
+        "minutes_before_event": 1440,
+        "enabled": true,
+        "priority": "normal",
+        "message_template": "reminder_1_day"
+      },
+      "day_of": {
+        "minutes_before_event": 480,
+        "enabled": true, 
+        "priority": "high",
+        "message_template": "reminder_day_of"
+      },
+      "event_time": {
+        "minutes_before_event": 0,
+        "enabled": true,
+        "priority": "high", 
+        "message_template": "event_starting"
+      },
+      "followup": {
+        "minutes_after_event": 1440,
+        "enabled": true,
+        "priority": "normal",
+        "message_template": "followup"
+      }
+    },
+    "timer_precision_seconds": 30,
+    "max_active_timers": 200
+  },
+
+  "discord_settings": {
+    "default_channel_id": "123456789012345678",
+    "rate_limiting": {
+      "messages_per_minute": 8,
+      "burst_messages": 3,
+      "priority_bypass": true
+    },
+    "message_formatting": {
+      "use_embeds": true,
+      "include_timestamps": true,
+      "include_event_links": true,
+      "max_message_length": 2000
+    },
+    "reaction_monitoring": {
+      "enabled": true,
+      "tracked_emojis": ["✅", "❌", "🤔", "🎉", "📷", "🎨"],
+      "auto_react_to_events": true
+    }
+  },
+
+  "reasoning_config": {
+    "llm_model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 1000,
+    "system_prompts": {
+      "event_reminders": "You are helping manage event reminders. Be friendly, informative, and encourage participation.",
+      "photo_events": "You are managing photo submissions for events. Encourage quality submissions and engagement.",
+      "vibe_bit_events": "You are facilitating collaborative canvas creation. Encourage creativity and participation.",
+      "general": "You are an ambient event agent helping users with event-related activities."
+    },
+    "decision_confidence_threshold": 0.6,
+    "context_window_events": 10
+  },
+
+  "event_triggers": {
+    "rsvp_changes": {
+      "enabled": true,
+      "min_change_threshold": 5,
+      "announcement_channels": ["events"]
+    },
+    "photo_submissions": {
+      "enabled": true,
+      "auto_acknowledge": true,
+      "quality_threshold": 0.7
+    },
+    "canvas_activities": {
+      "enabled": true,
+      "milestone_announcements": [10, 25, 50, 100],
+      "completion_celebration": true
+    },
+    "event_lifecycle": {
+      "creation_announcements": true,
+      "update_notifications": true,
+      "cancellation_alerts": true
+    }
+  },
+
+  "logging": {
+    "level": "DEBUG",
+    "file": "ambient_event_agent_test.log",
+    "rotation": {
+      "max_size_mb": 10,
+      "backup_count": 3
+    },
+    "include_state_dumps": true,
+    "log_mcp_calls": true,
+    "log_reasoning_steps": true
+  },
+
+  "monitoring": {
+    "health_check_interval": 60,
+    "metrics_collection": true,
+    "performance_tracking": true,
+    "error_alerting": {
+      "enabled": true,
+      "error_threshold": 5,
+      "window_minutes": 10
+    }
+  },
+
+  "testing": {
+    "simulate_events": true,
+    "mock_mcp_responses": false,
+    "event_simulation_interval": 30,
+    "test_channels": {
+      "events": "test_events_channel",
+      "photos": "test_photos_channel", 
+      "canvas": "test_canvas_channel"
+    },
+    "dummy_event_data": {
+      "event_id": "test_event_123",
+      "title": "Test Community Meetup",
+      "description": "A test event for agent validation",
+      "start_time": "2024-01-20T18:00:00Z",
+      "location": "Test Venue",
+      "created_by": "test_user"
+    }
+  },
+
+  "feature_flags": {
+    "enable_photo_processing": true,
+    "enable_canvas_integration": true,
+    "enable_advanced_reasoning": true,
+    "enable_proactive_suggestions": false,
+    "enable_sentiment_analysis": false,
+    "enable_user_preferences": true
+  }
+}

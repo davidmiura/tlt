@@ -1,0 +1,1 @@
+"""Agent implementation for ambient event agent"""

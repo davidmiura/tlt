@@ -1,0 +1,1 @@
+# Vibe Bit MCP Server package

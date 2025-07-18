@@ -1,0 +1,1 @@
+"""State management for ambient event agent"""

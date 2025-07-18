@@ -1,0 +1,1 @@
+"""Node implementations for ambient event agent"""

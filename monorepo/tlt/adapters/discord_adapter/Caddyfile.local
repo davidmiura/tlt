@@ -1,0 +1,36 @@
+{
+    # Global options for local development
+    admin off
+    auto_https off
+    local_certs
+}
+
+# Local development configuration
+localhost:8080 {
+    # Reverse proxy to the Discord adapter
+    reverse_proxy localhost:8001 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Health check endpoint
+    @health {
+        path /health/ping
+    }
+    handle @health {
+        respond "OK" 200
+    }
+
+    # Logging
+    log {
+        output stdout
+        format console
+    }
+}
+
+# Alternative: Use HTTP only for local development
+:8080 {
+    reverse_proxy localhost:8001
+}

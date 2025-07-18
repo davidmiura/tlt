@@ -1,0 +1,21 @@
+{
+    # Global options
+    admin off
+    email your_email_here
+    
+    # Use high ports (no sudo required)
+    http_port 8080
+    https_port 8443
+}
+
+# Simple HTTPS configuration with high ports
+your_sub_domain.duckdns.org {
+    # Reverse proxy to Discord adapter
+    reverse_proxy localhost:8001
+    
+    # Simple logging
+    log {
+        output stdout
+        format console
+    }
+}

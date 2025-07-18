@@ -1,0 +1,1 @@
+# Photo Vibe Check MCP Server package
