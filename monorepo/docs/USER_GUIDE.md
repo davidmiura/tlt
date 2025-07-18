@@ -20,7 +20,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 **Prerequisites**: You must be a Discord server administrator to register your guild.
 
-![Guild Registration](docs/assets/register_guild.png)
+![Guild Registration](assets/register_guild.png)
 
 **How to Register:**
 
@@ -45,7 +45,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 1: Launch Event Creation
 
-![Event Creation Modal](docs/assets/user_create_event.png)
+![Event Creation Modal](assets/user_create_event.png)
 
 **How to Create an Event:**
 
@@ -69,7 +69,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 2: Event Infrastructure Creation
 
-![Event Creation Result](docs/assets/user_create_event_2.png)
+![Event Creation Result](assets/user_create_event_2.png)
 
 **What TLT Automatically Creates:**
 
@@ -104,7 +104,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 1: React to Events
 
-![RSVP Reactions](docs/assets/user_rsvp_reaction.png)
+![RSVP Reactions](assets/user_rsvp_reaction.png)
 
 **How to RSVP:**
 
@@ -122,7 +122,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 2: Join the RSVP Thread
 
-![RSVP Thread](docs/assets/event_rsvp_thread.png)
+![RSVP Thread](assets/event_rsvp_thread.png)
 
 **The RSVP Thread Experience:**
 
@@ -148,7 +148,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 3: Extended RSVP Engagement
 
-![Extended RSVP Thread](docs/assets/event_rsvp_thread_2.png)
+![Extended RSVP Thread](assets/event_rsvp_thread_2.png)
 
 **Advanced Thread Features:**
 
@@ -173,7 +173,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 1: Submit Photos via DM
 
-![Photo Vibe Check Submission](docs/assets/user_photo_vibe_checkin.png)
+![Photo Vibe Check Submission](assets/user_photo_vibe_checkin.png)
 
 **How to Submit Photos for Vibe Checking:**
 
@@ -190,7 +190,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 2: Receive AI Feedback
 
-![Vibe Check Response](docs/assets/user_photo_vibe_checkin_2.png)
+![Vibe Check Response](assets/user_photo_vibe_checkin_2.png)
 
 **AI Response Features:**
 
@@ -223,7 +223,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 1: Access Private Planning Thread
 
-![Private Event Planning](docs/assets/event_owner_private_event_planning.png)
+![Private Event Planning](assets/event_owner_private_event_planning.png)
 
 **Private Planning Thread Features:**
 
@@ -247,7 +247,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 2: Planning Thread Guidance
 
-![Event Planning Help](docs/assets/event_owner_event_planning_help.png)
+![Event Planning Help](assets/event_owner_event_planning_help.png)
 
 **Planning Thread Capabilities:**
 
@@ -275,7 +275,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 3: Event Planning Assistance
 
-![Event Planning Thread](docs/assets/event_owner_event_planning_thread_0.png)
+![Event Planning Thread](assets/event_owner_event_planning_thread_0.png)
 
 **AI Planning Assistant Features:**
 
@@ -299,7 +299,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 4: Help and Guidance
 
-![Event Owner Help](docs/assets/event_owner_help.png)
+![Event Owner Help](assets/event_owner_help.png)
 
 **Comprehensive Help System:**
 
@@ -323,7 +323,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 5: Promotional Media Management
 
-![Promotional Images Upload](docs/assets/event_owner_promo_image_1.png)
+![Promotional Images Upload](assets/event_owner_promo_image_1.png)
 
 **Promotional Image Features:**
 
@@ -339,7 +339,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 - Community sees visual identity of the event
 - Helps set clear expectations for attendees
 
-![Multiple Promotional Images](docs/assets/event_owner_promo_images_2.png)
+![Multiple Promotional Images](assets/event_owner_promo_images_2.png)
 
 **Advanced Image Management:**
 
@@ -357,7 +357,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Step 6: Image Cross-Posting
 
-![Promotional Image Cross-Post](docs/assets/event_promo_image_1_crosspost.png)
+![Promotional Image Cross-Post](assets/event_promo_image_1_crosspost.png)
 
 **Automatic Cross-Posting Features:**
 
@@ -367,7 +367,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 - Shows visual identity without requiring manual reposting
 - Keeps promotional content synchronized across all spaces
 
-![Multiple Images Cross-Post](docs/assets/event_promo_images_2_crosspost.png)
+![Multiple Images Cross-Post](assets/event_promo_images_2_crosspost.png)
 
 **Community Benefits:**
 
@@ -389,7 +389,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Comprehensive Event Analytics
 
-![Event Analytics Dashboard](docs/assets/event_owner_analytics.png)
+![Event Analytics Dashboard](assets/event_owner_analytics.png)
 
 **Analytics Dashboard Features:**
 
@@ -420,7 +420,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Status Information Display
 
-![Event Status Info](docs/assets/event_owner_status_info.png)
+![Event Status Info](assets/event_owner_status_info.png)
 
 **Real-Time Status Monitoring:**
 
@@ -448,7 +448,7 @@ Welcome to TLT (The Legendary Times)! This comprehensive guide will walk you thr
 
 ### Automated Event Reminders
 
-![Event Reminder](docs/assets/event_reminder.png)
+![Event Reminder](assets/event_reminder.png)
 
 **Smart Reminder System:**
 

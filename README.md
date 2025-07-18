@@ -3,13 +3,13 @@
 ## Table of Contents
 
 ### 📚 Documentation
-- [📖 **User Guide**](USER_GUIDE.md) - Complete pictorial guide for Discord users
-- [🏗️ **Architecture**](ARCHITECTURE.md) - System architecture with LangGraph agents and command flows
-- [🗂️ **Guild Data Schema**](GUILD_DATA.md) - Complete data structure and storage documentation
-- [🎯 **Use Cases**](USE_CASES.md) - Detailed use cases and user workflows
-- [🤖 **Claude Development Guide**](CLAUDE.md) - CLAUDE.md used by claude code as directives
-- [👥 **Claude Code Guide**](CLAUDE_CODE_GUIDE.md) - Developer guide for using Claude Code CLI effectively
-- [🌐 **Caddy Configuration**](tlt/adapters/discord_adapter/CADDY.md) - Reverse proxy setup and configuration
+- [📖 **User Guide**](monorepo/docs/USER_GUIDE.md) - Complete pictorial guide for Discord users
+- [🏗️ **Architecture**](monorepo/docs/ARCHITECTURE.md) - System architecture with LangGraph agents and command flows
+- [🗂️ **Guild Data Schema**](monorepo/docs/GUILD_DATA.md) - Complete data structure and storage documentation
+- [🎯 **Use Cases**](monorepo/docs/USE_CASES.md) - Detailed use cases and user workflows
+- [🤖 **Claude Development Guide**](monorepo/CLAUDE.md) - CLAUDE.md used by claude code as directives
+- [👥 **Claude Code Guide**](monorepo/docs/CLAUDE_CODE_GUIDE.md) - Developer guide for using Claude Code CLI effectively
+- [🌐 **Caddy Configuration**](monorepo/tlt/adapters/discord_adapter/CADDY.md) - Reverse proxy setup and configuration
 
 ### 🚀 Quick Start
 - [Prerequisites](#prerequisites)
@@ -181,7 +181,7 @@ PYTHONPATH=. ENV=production poetry run fastmcp run tlt/mcp_services/guild_manage
 ### Next.js Dashboard
 
 ```bash
-cd nextjs_app/dashboard
+cd monorepo/tlt/nextjs_app/dashboard
 
 # Install dependencies
 npm install
@@ -376,12 +376,12 @@ All services write to centralized logs:
 
 ```bash
 # View service logs
-tail -f tlt/logs/tlt_service.log
-tail -f tlt/logs/discord_adapter.log
-tail -f tlt/logs/event_manager.log
+tail -f monorepo/tlt/logs/tlt_service.log
+tail -f monorepo/tlt/logs/discord_adapter.log
+tail -f monorepo/tlt/logs/event_manager.log
 
 # Search for errors
-grep -i error tlt/logs/*.log
+grep -i error monorepo/tlt/logs/*.log
 ```
 
 ---
@@ -415,12 +415,12 @@ grep -i error tlt/logs/*.log
 
 For detailed information, refer to the comprehensive documentation:
 
-- **[User Guide](USER_GUIDE.md)** - Complete end-user documentation
-- **[Architecture](ARCHITECTURE.md)** - Technical system architecture
-- **[Guild Data](GUILD_DATA.md)** - Data structure and storage
-- **[Use Cases](USE_CASES.md)** - Detailed workflow examples
-- **[Claude Guide](CLAUDE.md)** - Development instructions
-- **[Caddy Setup](tlt/adapters/discord_adapter/CADDY.md)** - Reverse proxy configuration
+- **[User Guide](monorepo/docs/USER_GUIDE.md)** - Complete end-user documentation
+- **[Architecture](monorepo/docs/ARCHITECTURE.md)** - Technical system architecture
+- **[Guild Data](monorepo/docs/GUILD_DATA.md)** - Data structure and storage
+- **[Use Cases](monorepo/docs/USE_CASES.md)** - Detailed workflow examples
+- **[Claude Guide](monorepo/docs/CLAUDE.md)** - Development instructions
+- **[Caddy Setup](monorepo/tlt/adapters/discord_adapter/CADDY.md)** - Reverse proxy configuration
 
 ---
 
