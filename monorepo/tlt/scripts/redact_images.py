@@ -91,7 +91,7 @@ class ImageRedactor:
         except ValueError:
             return False
     
-    def redact_text_in_image(self, image_path: str, output_path: str, target_phrase: str = None, auto_redact: bool = False) -> int:
+    def redact_text_in_image(self, image_path: str, output_path: str, target_phrase: str = None, auto_redact: bool = False, debug: bool = False) -> int:
         """
         Redact sensitive text from an image.
         
@@ -100,6 +100,7 @@ class ImageRedactor:
             output_path: Path to save redacted image
             target_phrase: Specific phrase to redact (if provided)
             auto_redact: Whether to automatically redact sensitive data
+            debug: Print debug information about OCR detection
             
         Returns:
             Number of redactions made
@@ -109,54 +110,278 @@ class ImageRedactor:
             draw = ImageDraw.Draw(image)
             redactions_made = 0
             
-            # Perform OCR with bounding boxes
-            ocr_data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
+            # Perform OCR with bounding boxes - try multiple configurations for better detection
+            ocr_configs = [
+                '',  # Default config
+                '--psm 6',  # Treat image as single uniform block
+                '--psm 8',  # Treat image as single word
+                '--psm 13',  # Raw line. Treat image as single text line
+                '-c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'  # Letters and numbers only
+            ]
             
+            all_ocr_data = []
+            for config in ocr_configs:
+                try:
+                    data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT, config=config)
+                    all_ocr_data.append(data)
+                    if debug and target_phrase:
+                        valid_texts = [data['text'][i].strip() for i in range(len(data['text'])) if data['text'][i].strip()]
+                        print(f"DEBUG: OCR config '{config}' found {len(valid_texts)} text elements")
+                except:
+                    continue
+            
+            # Use the first (default) configuration as primary
+            ocr_data = all_ocr_data[0] if all_ocr_data else {'text': [], 'left': [], 'top': [], 'width': [], 'height': [], 'conf': []}
+            
+            # Combine results from all configurations for better coverage
+            combined_texts = set()
+            for data in all_ocr_data:
+                for i in range(len(data['text'])):
+                    text = data['text'][i].strip()
+                    if text and len(text) > 2:  # Only include meaningful text
+                        combined_texts.add(text.lower())
+            
+            # Filter out empty text elements
+            valid_indices = []
             for i in range(len(ocr_data['text'])):
                 text = ocr_data['text'][i].strip()
+                if text:
+                    valid_indices.append(i)
+            
+            if debug and target_phrase:
+                print(f"\nDEBUG: OCR detected {len(valid_indices)} text elements:")
+                for i in valid_indices:
+                    text = ocr_data['text'][i].strip()
+                    conf = ocr_data['conf'][i]
+                    x, y = ocr_data['left'][i], ocr_data['top'][i]
+                    print(f"  [{i}] '{text}' (conf: {conf}, pos: {x},{y})")
+                print(f"\nDEBUG: Combined texts from all OCR configs: {sorted(combined_texts)}")
+            
+            # Track which elements to redact
+            elements_to_redact = set()
+            direct_redaction_areas = []  # List of (x, y, w, h) tuples for direct coordinate redaction
+            
+            if target_phrase:
+                target_lower = target_phrase.lower()
+                if debug:
+                    print(f"\nDEBUG: Looking for phrase: '{target_phrase}' (lowercase: '{target_lower}')")
                 
-                # Skip empty text
-                if not text:
-                    continue
+                # Check if phrase exists in any of the combined OCR results
+                phrase_found_in_combined = any(target_lower in text for text in combined_texts)
+                if debug and phrase_found_in_combined:
+                    matching_texts = [text for text in combined_texts if target_lower in text]
+                    print(f"DEBUG: Phrase found in combined OCR results: {matching_texts}")
                 
-                should_redact = False
+                # First, try to find exact phrase matches in individual elements across ALL OCR configurations
+                for data_idx, data in enumerate(all_ocr_data):
+                    config_name = ocr_configs[data_idx] if data_idx < len(ocr_configs) else f"config_{data_idx}"
+                    for i in range(len(data['text'])):
+                        text = data['text'][i].strip().lower()
+                        if text and target_lower in text:
+                            # Found the phrase! Now find corresponding element in primary OCR data
+                            x, y, w, h = data['left'][i], data['top'][i], data['width'][i], data['height'][i]
+                            
+                            # Find overlapping elements in primary OCR data
+                            for j in valid_indices:
+                                primary_x = ocr_data['left'][j]
+                                primary_y = ocr_data['top'][j]
+                                primary_w = ocr_data['width'][j]
+                                primary_h = ocr_data['height'][j]
+                                
+                                # Check if bounding boxes overlap significantly
+                                overlap_x = max(0, min(x + w, primary_x + primary_w) - max(x, primary_x))
+                                overlap_y = max(0, min(y + h, primary_y + primary_h) - max(y, primary_y))
+                                overlap_area = overlap_x * overlap_y
+                                
+                                # If there's significant overlap (at least 30% of either box)
+                                area1 = w * h
+                                area2 = primary_w * primary_h
+                                if area1 > 0 and area2 > 0:
+                                    overlap_ratio = overlap_area / min(area1, area2)
+                                    if overlap_ratio >= 0.3:
+                                        elements_to_redact.add(j)
+                                        if debug:
+                                            print(f"DEBUG: Found phrase in {config_name} at ({x},{y},{w},{h})")
+                                            print(f"DEBUG: Mapped to primary element [{j}]: '{ocr_data['text'][j].strip()}' at ({primary_x},{primary_y})")
+                            
+                            # If no overlapping elements found, add direct redaction coordinates
+                            if not any(True for _ in elements_to_redact):  # Check if no elements added yet for this phrase
+                                direct_redaction_areas.append((x, y, w, h))
+                                if debug:
+                                    print(f"DEBUG: Added direct redaction area at ({x},{y},{w},{h})")
                 
-                if target_phrase:
-                    # Redact specific phrase
-                    if target_phrase.lower() in text.lower():
-                        should_redact = True
+                # Also check primary OCR data elements
+                for i in valid_indices:
+                    text = ocr_data['text'][i].strip().lower()
+                    if target_lower in text:
+                        elements_to_redact.add(i)
+                        if debug:
+                            print(f"DEBUG: Found exact match in primary element [{i}]: '{ocr_data['text'][i].strip()}'")
                 
-                if auto_redact:
-                    # Auto-redact sensitive information
+                # If no exact matches found, try to find phrase across multiple elements
+                if not elements_to_redact:
+                    if debug:
+                        print("DEBUG: No exact matches found, trying multi-element reconstruction...")
+                    
+                    # Build a reconstructed text with position mapping
+                    reconstructed_text = ""
+                    char_to_element = []
+                    
+                    for idx, i in enumerate(valid_indices):
+                        text = ocr_data['text'][i].strip()
+                        start_pos = len(reconstructed_text)
+                        
+                        # Add space if this isn't the first element and we're on same line roughly
+                        if idx > 0:
+                            prev_i = valid_indices[idx - 1]
+                            # Check if elements are on roughly the same line (within 10 pixels)
+                            if abs(ocr_data['top'][i] - ocr_data['top'][prev_i]) <= 10:
+                                reconstructed_text += " "
+                                char_to_element.append(None)  # Space doesn't belong to any element
+                        
+                        reconstructed_text += text
+                        # Map each character to its OCR element index
+                        for _ in range(len(text)):
+                            char_to_element.append(i)
+                    
+                    if debug:
+                        print(f"DEBUG: Reconstructed text: '{reconstructed_text}'")
+                        print(f"DEBUG: Reconstructed lowercase: '{reconstructed_text.lower()}'")
+                    
+                    # Search for target phrase in reconstructed text
+                    reconstructed_lower = reconstructed_text.lower()
+                    phrase_start = reconstructed_lower.find(target_lower)
+                    
+                    if phrase_start != -1:
+                        phrase_end = phrase_start + len(target_phrase)
+                        if debug:
+                            print(f"DEBUG: Found phrase at positions {phrase_start}-{phrase_end} in reconstructed text")
+                        
+                        # Find all OCR elements that contain part of the phrase
+                        for char_pos in range(phrase_start, phrase_end):
+                            if char_pos < len(char_to_element) and char_to_element[char_pos] is not None:
+                                elements_to_redact.add(char_to_element[char_pos])
+                                if debug:
+                                    elem_idx = char_to_element[char_pos]
+                                    print(f"DEBUG: Will redact element [{elem_idx}]: '{ocr_data['text'][elem_idx].strip()}'")
+                    elif debug:
+                        print(f"DEBUG: Phrase '{target_phrase}' not found in reconstructed text")
+                
+                if debug:
+                    print(f"DEBUG: Total elements to redact: {len(elements_to_redact)}")
+            
+            # Only try aggressive approaches if phrase was not found at all
+            phrase_found_anywhere = len(elements_to_redact) > 0 or len(direct_redaction_areas) > 0
+            
+            if target_phrase and not phrase_found_anywhere:
+                if debug:
+                    print("DEBUG: Phrase not found anywhere, trying fallback approaches...")
+                
+                # Try character-by-character fuzzy matching only as last resort
+                if debug:
+                    print("DEBUG: Trying character-by-character approach...")
+                target_chars = set(target_phrase.lower().replace(" ", ""))
+                for i in valid_indices:
+                    text = ocr_data['text'][i].strip().lower().replace(" ", "")
+                    # If this text element contains a significant portion of target phrase characters
+                    matching_chars = len(target_chars.intersection(set(text)))
+                    if len(text) >= 3 and matching_chars >= min(len(target_chars) * 0.6, len(text) * 0.8):
+                        elements_to_redact.add(i)
+                        if debug:
+                            print(f"DEBUG: Fuzzy match in element [{i}]: '{ocr_data['text'][i].strip()}' (chars: {matching_chars}/{len(target_chars)})")
+                
+                # If still no matches and phrase found in combined results, try spatial approach
+                if not elements_to_redact and phrase_found_in_combined:
+                    if debug:
+                        print("DEBUG: Phrase found in combined OCR but not in individual elements, using spatial approach...")
+                    
+                    # Look for text elements in the top area of the image where usernames typically appear
+                    image_height = image.height
+                    top_area_threshold = image_height * 0.15  # Top 15% of image
+                    
+                    for i in valid_indices:
+                        y = ocr_data['top'][i]
+                        if y <= top_area_threshold:
+                            # This is in the top area, include it for redaction
+                            elements_to_redact.add(i)
+                            if debug:
+                                print(f"DEBUG: Including top-area element [{i}]: '{ocr_data['text'][i].strip()}' at y={y}")
+                
+                # If still no matches, try to find any text that contains partial matches of the target phrase
+                if not elements_to_redact:
+                    if debug:
+                        print("DEBUG: Trying partial substring matching...")
+                    
+                    # Try to find elements that contain substrings of the target phrase
+                    target_parts = [target_phrase[i:i+4] for i in range(len(target_phrase)-3)]  # 4-char substrings
+                    for part in target_parts:
+                        part_lower = part.lower()
+                        for i in valid_indices:
+                            text = ocr_data['text'][i].strip().lower()
+                            if part_lower in text:
+                                elements_to_redact.add(i)
+                                if debug:
+                                    print(f"DEBUG: Partial match '{part}' in element [{i}]: '{ocr_data['text'][i].strip()}'")
+            elif debug and target_phrase:
+                print(f"DEBUG: Phrase found via direct coordinates, skipping fallback approaches")
+            
+            # Check for auto-redact patterns
+            if auto_redact:
+                for i in valid_indices:
+                    text = ocr_data['text'][i].strip()
                     if self.is_sensitive_text(text):
-                        should_redact = True
+                        elements_to_redact.add(i)
+            
+            # Redact marked elements
+            for i in elements_to_redact:
+                x, y, w, h = (
+                    ocr_data['left'][i],
+                    ocr_data['top'][i],
+                    ocr_data['width'][i],
+                    ocr_data['height'][i]
+                )
                 
-                if should_redact:
-                    x, y, w, h = (
-                        ocr_data['left'][i],
-                        ocr_data['top'][i],
-                        ocr_data['width'][i],
-                        ocr_data['height'][i]
-                    )
-                    
-                    # Add padding to ensure complete coverage
-                    padding = 2
-                    x = max(0, x - padding)
-                    y = max(0, y - padding)
-                    w = w + (padding * 2)
-                    h = h + (padding * 2)
-                    
-                    # Draw black rectangle to redact text
-                    draw.rectangle([(x, y), (x + w, y + h)], fill="black")
-                    redactions_made += 1
+                # Add padding to ensure complete coverage
+                padding = 2
+                x = max(0, x - padding)
+                y = max(0, y - padding)
+                w = w + (padding * 2)
+                h = h + (padding * 2)
+                
+                # Draw black rectangle to redact text
+                draw.rectangle([(x, y), (x + w, y + h)], fill="black")
+                redactions_made += 1
+            
+            # Redact direct coordinate areas
+            for x, y, w, h in direct_redaction_areas:
+                # Add padding to ensure complete coverage
+                padding = 2
+                x = max(0, x - padding)
+                y = max(0, y - padding)
+                w = w + (padding * 2)
+                h = h + (padding * 2)
+                
+                # Draw black rectangle to redact text
+                draw.rectangle([(x, y), (x + w, y + h)], fill="black")
+                redactions_made += 1
+                if debug:
+                    print(f"DEBUG: Applied direct redaction at ({x},{y},{w},{h})")
             
             # Save redacted image
             image.save(output_path)
             
             if redactions_made > 0:
                 print(f"Redacted {redactions_made} items in: {os.path.basename(image_path)} → {output_path}")
+                if target_phrase:
+                    print(f"  Target phrase: '{target_phrase}'")
+                    if elements_to_redact:
+                        print(f"  Element-based redactions: {len(elements_to_redact)}")
+                    if direct_redaction_areas:
+                        print(f"  Direct coordinate redactions: {len(direct_redaction_areas)}")
             else:
                 print(f"No redactions needed: {os.path.basename(image_path)} → {output_path}")
+                if target_phrase:
+                    print(f"  Phrase '{target_phrase}' not found")
             
             return redactions_made
             
@@ -164,7 +389,7 @@ class ImageRedactor:
             print(f"Error processing {image_path}: {e}")
             return 0
     
-    def redact_directory(self, input_dir: str, output_dir: str, target_phrase: str = None, auto_redact: bool = False) -> None:
+    def redact_directory(self, input_dir: str, output_dir: str, target_phrase: str = None, auto_redact: bool = False, debug: bool = False) -> None:
         """
         Redact all images in a directory.
         
@@ -173,6 +398,7 @@ class ImageRedactor:
             output_dir: Directory to save redacted images
             target_phrase: Specific phrase to redact (if provided)
             auto_redact: Whether to automatically redact sensitive data
+            debug: Print debug information about OCR detection
         """
         if not os.path.exists(input_dir):
             print(f"Error: Input directory does not exist: {input_dir}")
@@ -187,7 +413,7 @@ class ImageRedactor:
                 input_path = os.path.join(input_dir, filename)
                 output_path = os.path.join(output_dir, filename)
                 
-                redactions = self.redact_text_in_image(input_path, output_path, target_phrase, auto_redact)
+                redactions = self.redact_text_in_image(input_path, output_path, target_phrase, auto_redact, debug)
                 self.redaction_count += redactions
                 self.total_images += 1
         
@@ -293,6 +519,12 @@ Examples:
         help='Enable verbose output'
     )
     
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='Enable debug output showing OCR detection details'
+    )
+    
     args = parser.parse_args()
     
     # Validate arguments
@@ -316,7 +548,8 @@ Examples:
         input_dir=args.input_dir,
         output_dir=args.output_dir,
         target_phrase=args.phrase,
-        auto_redact=args.auto_redact
+        auto_redact=args.auto_redact,
+        debug=args.debug
     )
     
     # Create redaction report
